@@ -28,7 +28,8 @@ int setup_buff(char *buff, char *user_str, int len){
         if (str_len > len) {
             return -1;
         }
-    
+
+        // Filter extra white spaces by checking if we already encounted a white space prior to a new white space.
         if (*ptr == ' ' || *ptr == '\t') {
             if (!has_space) {
                 has_space = 1;
@@ -45,7 +46,7 @@ int setup_buff(char *buff, char *user_str, int len){
         ptr++;
     }
 
-    // Remove ending white space
+    // Remove ending white space in case there are trailing white spaces
     if (*(ptr - 1) == ' ') {
         str_len--;
         buff--;
@@ -53,7 +54,7 @@ int setup_buff(char *buff, char *user_str, int len){
     
     buff_len = str_len;
 
-    // Fix rest of buffer with '.'
+    // Fill rest of buffer with '.'
     while(buff_len < len) {
         *buff = '.';
         buff++;
@@ -82,7 +83,8 @@ int count_words(char *buff, int len, int str_len){
     char* ptr = buff;
     int wc = 0;
 
-    while (*ptr != '\0') {
+    // Counts word by keeping track of the white spaces and if we are in the middle of a word.
+    for (int i = 0; i < len && i < str_len; i++) {
         char currChar = *ptr;
         if (!word_start) {
             if (currChar == ' ' || currChar == '\t') {
@@ -116,10 +118,11 @@ void reverse_string(char *str){
 
     end_idx--;
 
+    // Swaps letter from both ends of string as move to the middle by moving the two pointers closer to eachother until they intersect.
     while (end_idx > start_idx) {
-        char temp = *(str + start_idx);
+        tmp_char = *(str + start_idx);
         *(str + start_idx) = *(str + end_idx);
-        *(str + end_idx) = temp;
+        *(str + end_idx) = tmp_char;
         start_idx++;
         end_idx--;
     }
@@ -128,30 +131,34 @@ void reverse_string(char *str){
 }
 
 void word_print(char *str){
-    int len;
-    int last_char_idx;
     int wc = 0;       
     int wlen = 0;      
     int word_start = 0;    
     char* ptr = str;
 
+    // As we count each word similar to count_words, we keep track of the number of letters in said word and print the information as we move to a new word.
     while (*ptr != '\0' && *ptr != '.') {
         char currChar = *ptr;
         if (!word_start) {
             if (currChar == ' ' || currChar == '\t') {
                 continue;
-            } else {
+            } 
+            // This else block prints the necessary information for starting a new word.
+            else {
                 wc++;
                 word_start = 1;
                 wlen = 0;
                 printf("%d. ", wc);
             }
         } else {
+            // We print the number of letters in the current word we are parsing in this if block because we are moving to a new word.
             if (currChar == ' ' || currChar == '\t') {
                 printf("(%d)\n", wlen);
                 word_start = 0;
                 wlen = 0;
-            } else {
+            } 
+            // This else block prints the character one by one of a word while keeping track of the number of letters.
+            else {
                 printf("%c", currChar);
                 wlen++;
             }
@@ -159,6 +166,7 @@ void word_print(char *str){
         }
     }
 
+    // Prints out count for the last word in the string
     if (word_start) {
         printf("(%d)\n", wlen);
     }
@@ -174,7 +182,8 @@ int main(int argc, char *argv[]){
 
     //TODO:  #1. WHY IS THIS SAFE, aka what if arv[1] does not exist?
     //      PLACE A COMMENT BLOCK HERE EXPLAINING
-    //      We put a guard here to make sure that this program is taking 2 arguments with the first one being '-'.
+    //      We put a guard here to make sure that this program is taking at least 2 arguments with the second one being '-'. 
+    //      This prevents our program from having any indexing error or issue finding the flag argument.
     if ((argc < 2) || (*argv[1] != '-')){
         usage(argv[0]);
         exit(1);
@@ -192,7 +201,8 @@ int main(int argc, char *argv[]){
 
     //TODO:  #2 Document the purpose of the if statement below
     //      PLACE A COMMENT BLOCK HERE EXPLAINING
-    //      We put another guard here to make sure that the arguments being passed is no more than 2 so that the program can run as expected
+    //      We put another guard here to make sure that the arguments being passed is 3 or more so that the program can run as expected. 
+    //      This also prevents an indexing error below where we want to access the 3rd argument as the input_string. 
     if (argc < 3){
         usage(argv[0]);
         exit(1);
@@ -242,6 +252,15 @@ int main(int argc, char *argv[]){
             }
             printf("\nNumber of words returned: %d\n", rc);
             break;
+
+        case 'x':
+            if (argc < 5) {
+                usage(argv[0]);
+                exit(0);
+            }
+            printf("Not Implemented!\n");
+            exit(3);
+            break;
             
         default:
             usage(argv[0]);
@@ -250,6 +269,7 @@ int main(int argc, char *argv[]){
 
     //TODO:  #6 Dont forget to free your buffer before exiting
     print_buff(buff,BUFFER_SZ);
+    free(buff);
     exit(0);
 }
 
@@ -260,3 +280,7 @@ int main(int argc, char *argv[]){
 //          the buff variable will have exactly 50 bytes?
 //  
 //          PLACE YOUR ANSWER HERE
+//          Passing in the length of the buffer is good practice, because without it, there is no way
+//          for the function to know how many byte is allocated in the buffer. In this assignment, we know that we assigned
+//          50 bytes to the buffer, but this will not always be case. It is true we can access the global variable to see what the size of the buffer is,
+//          but in the case where we are manipulating the buffer size, the size can be hard to track. Adding the size of the buffer as we pass it to functions prevents any confusion.
