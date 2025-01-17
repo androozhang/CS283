@@ -12,19 +12,63 @@ int  setup_buff(char *, char *, int);
 //prototypes for functions to handle required functionality
 int  count_words(char *, int, int);
 //add additional prototypes here
-
+void  reverse_string(char *);
+void  word_print(char *);
 
 int setup_buff(char *buff, char *user_str, int len){
     //TODO: #4:  Implement the setup buff as per the directions
-    return 0; //for now just so the code compiles. 
+    char *ptr = user_str;
+    int str_len = 0;
+    int buff_len;
+    int has_space = 1;
+    
+    ptr = user_str;
+
+    while (*ptr != '\0') {
+        if (str_len > len) {
+            return -1;
+        }
+    
+        if (*ptr == ' ' || *ptr == '\t') {
+            if (!has_space) {
+                has_space = 1;
+                *buff = ' ';
+                buff++;
+                str_len++;
+            }
+        } else {
+            has_space = 0;
+            *buff = *ptr;
+            buff++;
+            str_len++;
+        }
+        ptr++;
+    }
+
+    // Remove ending white space
+    if (*(ptr - 1) == ' ') {
+        str_len--;
+        buff--;
+    }
+    
+    buff_len = str_len;
+
+    // Fix rest of buffer with '.'
+    while(buff_len < len) {
+        *buff = '.';
+        buff++;
+        buff_len++;
+    }
+
+    return str_len;
 }
 
 void print_buff(char *buff, int len){
-    printf("Buffer:  ");
+    printf("Buffer:  [");
     for (int i=0; i<len; i++){
         putchar(*(buff+i));
     }
-    putchar('\n');
+    printf("]\n");
 }
 
 void usage(char *exename){
@@ -34,10 +78,91 @@ void usage(char *exename){
 
 int count_words(char *buff, int len, int str_len){
     //YOU MUST IMPLEMENT
-    return 0;
+    int word_start = 0;
+    char* ptr = buff;
+    int wc = 0;
+
+    while (*ptr != '\0') {
+        char currChar = *ptr;
+        if (!word_start) {
+            if (currChar == ' ' || currChar == '\t') {
+                continue;
+            } else {
+                wc++;
+                word_start = 1;
+            }
+        } else {
+            if (currChar == ' ' || currChar == '\t') {
+                word_start = 0;
+            }
+        }
+        ptr++;
+    }
+
+    return wc;
 }
 
 //ADD OTHER HELPER FUNCTIONS HERE FOR OTHER REQUIRED PROGRAM OPTIONS
+void reverse_string(char *str){
+    int end_idx = 0; 
+    int start_idx = 0;
+    char tmp_char;
+    char *ptr = str;
+
+    while (*ptr != '.' && *ptr != '\0') {
+        ptr++;
+        end_idx++;
+    }
+
+    end_idx--;
+
+    while (end_idx > start_idx) {
+        char temp = *(str + start_idx);
+        *(str + start_idx) = *(str + end_idx);
+        *(str + end_idx) = temp;
+        start_idx++;
+        end_idx--;
+    }
+
+    return;
+}
+
+void word_print(char *str){
+    int len;
+    int last_char_idx;
+    int wc = 0;       
+    int wlen = 0;      
+    int word_start = 0;    
+    char* ptr = str;
+
+    while (*ptr != '\0' && *ptr != '.') {
+        char currChar = *ptr;
+        if (!word_start) {
+            if (currChar == ' ' || currChar == '\t') {
+                continue;
+            } else {
+                wc++;
+                word_start = 1;
+                wlen = 0;
+                printf("%d. ", wc);
+            }
+        } else {
+            if (currChar == ' ' || currChar == '\t') {
+                printf("(%d)\n", wlen);
+                word_start = 0;
+                wlen = 0;
+            } else {
+                printf("%c", currChar);
+                wlen++;
+            }
+            ptr++;
+        }
+    }
+
+    if (word_start) {
+        printf("(%d)\n", wlen);
+    }
+}
 
 int main(int argc, char *argv[]){
 
@@ -49,6 +174,7 @@ int main(int argc, char *argv[]){
 
     //TODO:  #1. WHY IS THIS SAFE, aka what if arv[1] does not exist?
     //      PLACE A COMMENT BLOCK HERE EXPLAINING
+    //      We put a guard here to make sure that this program is taking 2 arguments with the first one being '-'.
     if ((argc < 2) || (*argv[1] != '-')){
         usage(argv[0]);
         exit(1);
@@ -66,6 +192,7 @@ int main(int argc, char *argv[]){
 
     //TODO:  #2 Document the purpose of the if statement below
     //      PLACE A COMMENT BLOCK HERE EXPLAINING
+    //      We put another guard here to make sure that the arguments being passed is no more than 2 so that the program can run as expected
     if (argc < 3){
         usage(argv[0]);
         exit(1);
@@ -77,7 +204,11 @@ int main(int argc, char *argv[]){
     //          handle error if malloc fails by exiting with a 
     //          return code of 99
     // CODE GOES HERE FOR #3
-
+    buff = (char*)malloc(BUFFER_SZ * sizeof(char));
+    if (buff == NULL) {
+        printf("Error allocating memory");
+        exit(99);
+    }
 
     user_str_len = setup_buff(buff, input_string, BUFFER_SZ);     //see todos
     if (user_str_len < 0){
@@ -97,6 +228,21 @@ int main(int argc, char *argv[]){
 
         //TODO:  #5 Implement the other cases for 'r' and 'w' by extending
         //       the case statement options
+        case 'r':
+            reverse_string(buff);
+            break;
+        
+        case 'w':
+            printf("Word Print\n----------\n");
+            word_print(buff);
+            rc = count_words(buff, BUFFER_SZ, user_str_len);  //you need to implement
+            if (rc < 0){
+                printf("Error counting words, rc = %d", rc);
+                exit(2);
+            }
+            printf("\nNumber of words returned: %d\n", rc);
+            break;
+            
         default:
             usage(argv[0]);
             exit(1);
