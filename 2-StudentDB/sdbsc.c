@@ -62,7 +62,6 @@ int open_db(char *dbFile, bool should_truncate)
  */
 int get_student(int fd, int id, student_t *s)
 {
-    // TODO
     off_t myoffset;
     myoffset = id * STUDENT_RECORD_SIZE;
 
@@ -147,7 +146,7 @@ int add_student(int fd, int id, char *fname, char *lname, int gpa)
 
 
     ssize_t bytes_written = write(fd, &mystudent, STUDENT_RECORD_SIZE);
-    if (bytes_written < 0) // TODO - what is the other condition you should check about bytes_written
+    if (bytes_written < 0) 
     {
         printf(M_ERR_DB_WRITE);
         return ERR_DB_FILE;
@@ -181,7 +180,6 @@ int add_student(int fd, int id, char *fname, char *lname, int gpa)
  */
 int del_student(int fd, int id)
 {
-    // TODO
     student_t student_to_delete = {0};
     int get_student_status = get_student(fd, id, &student_to_delete);
     if (get_student_status == SRCH_NOT_FOUND) {
@@ -256,7 +254,7 @@ int count_db_records(int fd)
     if (read_result == 0) {
        printf(M_DB_EMPTY);
     } 
-    
+
     while (read_result != 0) {
          if (memcmp(&student_to_read, &EMPTY_STUDENT_RECORD, STUDENT_RECORD_SIZE) == 0) {
             id++;
@@ -379,12 +377,9 @@ int print_db(int fd)
  */
 void print_student(student_t *s)
 {
-    // TODO
     if (s == NULL || s->id == 0) {
         return;
     }
-
-    student_t student_to_print = *s;
 
     float gpa = s->gpa / 100.0;
 

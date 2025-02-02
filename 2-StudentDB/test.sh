@@ -81,6 +81,7 @@ setup_file() {
     }
 }
 
+
 @test "Find student 3 in db" {
     run ./sdbsc -f 3
     
@@ -164,9 +165,11 @@ setup_file() {
     }
 }
 
+#if you implemented the compress db function remove the 
+#skip from the tests below
+
 
 @test "Compress db - try 1" {
-    skip
     run ./sdbsc -x
     [ "$status" -eq 0 ]
     [ "${lines[0]}" = "Database successfully compressed!" ] || {
@@ -174,6 +177,7 @@ setup_file() {
         return 1
     }
 }
+
 
 
 @test "Delete student 99999 in db" {
